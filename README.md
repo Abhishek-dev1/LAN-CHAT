@@ -22,7 +22,7 @@ This command line application basically uses the user's IPv4 address and create 
   ./client IP_ADDRESS SERVER_PORT_NO.
 ```
 #### (if not worrk then use g++ client.cpp -lpthread -o client instead of above command)
-    
+##### TO RUN THIS IN LINUX BASED OS JUST SKIP THE INSTALLATION OD CYGWIN AND FOLLOW THE SAME STEPS
 ## Example
 
 ##### Server
