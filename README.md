@@ -29,11 +29,9 @@ This command line application basically uses the user's IPv4 address and create 
 ```javascript
     g++ server.cpp -o server 
     ./server 8080
-}
 ```
 ##### Client
 ```javascript
     g++ client.cpp -o client 
     ./client 127.0.0.1 8080
-}
 ```
