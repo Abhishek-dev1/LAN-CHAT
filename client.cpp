@@ -1,143 +1,79 @@
-#include <string.h>
-#include <cstring>
-#include <unistd.h>
+#include <iostream>
+#include <string>
 #include <stdio.h>
-#include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <strings.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
-#include <string>
-#include <time.h>
-#include <vector>
-//#include <winsock2.h>
+#include <unistd.h>
+#include <string.h>
+#include <netdb.h>
+#include <sys/uio.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <fstream>
 using namespace std;
-
-void *ftch(void *);
-void *snd(void *);
-static int client_socket;
-static int get_size;
-
-int main(int argc,char *argv[])
+//Client side
+int main(int argc, char *argv[])
 {
-	int port;
-    struct sockaddr_in server_address;
-    struct hostent *server;
-	pthread_t procThread[3];
-	//TO CHECK WETHER VALID ARGUMENTS ARE PASSED OR NOT 
-	if(argc<3)
-	{
-		cerr<<"Not Enough Arguments:( Syntax: ./nameclient <hostName> <port>"<<endl;
+    
+    if(argc != 3)
+    {
+        cerr << "Few arguments :(" << endl; exit(0); 
+    }  
+    char *serverIp = argv[1]; int port = atoi(argv[2]); 
+    
+    char msg[1500]; 
+    struct hostent* host = gethostbyname(serverIp); 
+    sockaddr_in sendSockAddr;   
+    bzero((char*)&sendSockAddr, sizeof(sendSockAddr)); 
+    sendSockAddr.sin_family = AF_INET; 
+    sendSockAddr.sin_addr.s_addr = 
+        inet_addr(inet_ntoa(*(struct in_addr*)*host->h_addr_list));
+    sendSockAddr.sin_port = htons(port);
+    int clientSd = socket(AF_INET, SOCK_STREAM, 0);
+    int status = connect(clientSd,(sockaddr*) &sendSockAddr, sizeof(sendSockAddr));
+    if(status < 0)
+    {
+        cout<<"Unable to connect to the socket!"<<endl; 
 		return 0;
-	}
-	port=atoi(argv[2]);
-	//IF THE PORT ENTERED IS VALID OR NOT 
-	if(port<1024 || port>65535)
-	{
-		cerr<<"Enter the port number in the range (1024 - 65535)";
-		return 0;
-	}
-	//CREATING A SOCKET...
-	
-	client_socket = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-	if(client_socket<0)
-	{
-		cerr<<"Unable to open socket"<<endl;
-		return 0;
-	}
-	server=gethostbyname(argv[1]); //returns a pointer to the hostent structure containing the host's IP address and other information
-	if(server==NULL)
-	{
-		cerr<<"Unable to find the host"<<endl;
-		return 0;
-	}
-	//INITIALIZING A SOCKET 
-	
-	memset(&server_address, 0, sizeof server_address);  // if not work then use  bzero((char*) &server_address, sizeof(server_address));
-	server_address.sin_family=AF_INET;
-	bcopy((char *) server -> h_addr, (char *) &server_address.sin_addr.s_addr, server -> h_length); //A NULL-terminated list of addresses for the host
-																								    //Addresses are returned in network byte order
-																								    // The macro h_addr is defined to be h_addr_list[0] for compatibility
-	server_address.sin_port =htons(port);
-	//COnNECTIONG TO THE SERVER...
-	int connection=connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address));
-	
-	if(connection < 0)
-	{
-		cerr<<"Connection Error! Unable to connect"<<endl;
-		return 0;
-	}
-	int thread_no=0; // using as iterator for procthread array
-	while(thread_no<3)
-	{
-		
-		//Creating a thread for sending and receiving msg and updating the terminating condition
-		pthread_create(&procThread[thread_no], NULL, ftch, NULL); 
-        thread_no++;
-        pthread_create(&procThread[thread_no], NULL, snd, NULL); 
-        thread_no++;
-	}	
-	// WAITING FOR A THREAD TO TERMINATE...SOMETHING LIKE A QUEUE :)
-	for(int idx=0;idx<3;idx++)
-	{
-		pthread_join(procThread[idx],NULL);
-	} 
-	
-}
-
-void *snd(void *dummy)
-{
-	while(true)
-	{
-		char msg[350];
-		cout<<"\rME> ";
-		memset(&msg,0,sizeof msg);   //IF NOT WORK USE bzero(msg,350)
-		cin.getline(msg,350);
-		
-		send(client_socket,msg, strlen(msg),0);
-		
-		string message(msg);
-		if(message=="quit")
-		break;
-	}
-	cout<<"Closing connection..."<<endl;
-	cout<<"Closed!"<<endl;
-	close(client_socket);
-
-	exit(0);
-}
-void *ftch(void *dummy)
-{
-	char msgg[350];
-	memset(&msgg,0,sizeof msgg);
-	
-	while(true)
-	{
-		memset(&msgg,0,sizeof msgg);
-        get_size=read(client_socket, msgg, 350);
-        
-        string ftchmsg (msgg);
-        cout <<  "\rOtherUser> "  << ftchmsg << endl;
-        cout << "Me> ";
-	fflush(stdout);
-        
-	if ( ftchmsg =="quit")  break;
-	else if ( get_size ==  0 ){
-	cout << "\rServer Diconnected" << endl; 
-	break; 
-	}
-	else if ( get_size == -1 ) {
-	 cout << "\rRecieve Failed" << endl; 
-	 break; 
-	 }
-}
-        cout << "\nClosing thread and connection..." << endl;
-        cout << "Closed!" << endl;
-        close(client_socket);
-        exit(0);
+    }
+    cout << "Connected to the server! :)" << endl;
+    int bytesRead, bytesWritten = 0;
+    struct timeval start1, end1;
+    gettimeofday(&start1, NULL);
+    while(1)
+    {
+        cout << ">";
+        string data;
+        getline(cin, data);
+        memset(&msg, 0, sizeof(msg));
+        strcpy(msg, data.c_str());
+        if(data == "exit")
+        {
+            send(clientSd, (char*)&msg, strlen(msg), 0);
+            break;
+        }
+        bytesWritten += send(clientSd, (char*)&msg, strlen(msg), 0);
+        cout << "waiting for server to responsd..." << endl;
+        memset(&msg, 0, sizeof(msg));
+        bytesRead += recv(clientSd, (char*)&msg, sizeof(msg), 0);
+        if(!strcmp(msg, "exit"))
+        {
+            cout << "Server has quit the session" << endl;
+            break;
+        }
+        cout << "Server: " << msg << endl;
+    }
+    gettimeofday(&end1, NULL);
+    close(clientSd);
+    cout << "Session Information" << endl;
+    cout << "Bytes written: " << bytesWritten << 
+    " Bytes read: " << bytesRead << endl;
+    cout << "Elapsed time: " << (end1.tv_sec- start1.tv_sec) 
+      << " secs" << endl;
+    cout << "Connection closed" << endl;
+    return 0;    
 }
