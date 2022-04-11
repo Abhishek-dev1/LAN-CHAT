@@ -1,7 +1,7 @@
 
 # Local Area Network Chat 
 
-This command line application basically uses the user's IPv4 address and create a socket to transmit a message from one's terminal to another terminal (P-2-P Chat).
+This command line application basically uses the user's IPv4 address and create a socket to transmit a message from one's terminal to another terminal.
 
 
 ## Installation
@@ -22,7 +22,8 @@ This command line application basically uses the user's IPv4 address and create 
   ./client IP_ADDRESS SERVER_PORT_NO.
 ```
 #### (if not worrk then use g++ client.cpp -lpthread -o client instead of above command)
-##### TO RUN THIS IN LINUX BASED OS JUST SKIP THE INSTALLATION OD CYGWIN AND FOLLOW THE SAME STEPS
+##### TO RUN THIS IN LINUX BASED OS JUST SKIP THE INSTALLATION OF CYGWIN AND FOLLOW THE SAME STEPS
+###### USE LINUX FOR BETTER RESULTS
 ## Example
 
 ##### Server
