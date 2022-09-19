@@ -15,13 +15,13 @@ This command line application basically uses the user's IPv4 address and create 
   g++ server.cpp -o server 
   ./server 8080 
 ```
-#### (if not worrk then use g++ server.cpp -lpthread -o server instead of above command)
+#### (if not work then use g++ server.cpp -lpthread -o server instead of above command)
 ### For Client
 ```bash
   g++ client.cpp -o client
   ./client IP_ADDRESS SERVER_PORT_NO.
 ```
-#### (if not worrk then use g++ client.cpp -lpthread -o client instead of above command)
+#### (if not work then use g++ client.cpp -lpthread -o client instead of above command)
 ##### TO RUN THIS IN LINUX BASED OS JUST SKIP THE INSTALLATION OF CYGWIN AND FOLLOW THE SAME STEPS
 ###### USE LINUX FOR BETTER RESULTS
 ## Example
